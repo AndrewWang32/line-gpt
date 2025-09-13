@@ -16,6 +16,11 @@ const client = new line.Client(config);
 
 // 驗證 LINE 簽名
 function validateSignature(body, signature) {
+  if (!config.channelSecret || !signature) {
+    console.log('缺少必要的簽名驗證參數');
+    return false;
+  }
+  
   const crypto = require('crypto');
   const hash = crypto
     .createHmac('SHA256', config.channelSecret)
@@ -109,12 +114,28 @@ async function handleOtherMessage(event) {
 
 // 主處理函數
 async function handleWebhook(req, res) {
+  console.log('收到請求:', req.method, req.url);
+  console.log('請求標頭:', req.headers);
+  
+  // 設置 CORS 標頭
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-line-signature');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
   if (req.method !== 'POST') {
+    console.log('不允許的請求方法:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const signature = req.headers['x-line-signature'];
   const body = JSON.stringify(req.body);
+  
+  console.log('請求體:', body);
+  console.log('簽名:', signature);
 
   // 驗證簽名
   if (!validateSignature(body, signature)) {
@@ -123,9 +144,12 @@ async function handleWebhook(req, res) {
   }
 
   const events = req.body.events;
+  console.log('收到事件數量:', events ? events.length : 0);
 
   try {
     for (const event of events) {
+      console.log('處理事件:', event.type);
+      
       if (event.type === 'message') {
         if (event.message.type === 'text') {
           await handleTextMessage(event);
@@ -144,7 +168,7 @@ async function handleWebhook(req, res) {
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('處理訊息時發生錯誤:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
 
