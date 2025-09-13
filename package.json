@@ -1,0 +1,30 @@
+{
+  "name": "line-gpt-vercel",
+  "version": "1.0.0",
+  "description": "LINE Bot integrated with ChatGPT using Vercel",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "^7.5.2",
+    "openai": "^4.20.1",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "line",
+    "chatgpt",
+    "vercel",
+    "bot"
+  ],
+  "author": "Andrew Wang",
+  "license": "MIT"
+}
